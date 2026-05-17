@@ -2,7 +2,7 @@ import { content } from "@/app/content";
 import styles from "./page.module.css";
 import RevealOnScroll from "./RevealOnScroll";
 import Image from "next/image";
-import ContactForm from "./ContactForm";
+//import ContactForm from "./ContactForm";
 
 function Container({ children }: { children: React.ReactNode }) {
   return <div className={styles.container}>{children}</div>;
@@ -286,7 +286,6 @@ export default function Home() {
                   </a>
                 </div>
 
-                <ContactForm />
               </div>
             </Section>
           </RevealOnScroll>

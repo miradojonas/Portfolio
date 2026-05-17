@@ -1,4 +1,4 @@
-"use client";
+/*"use client";
 
 import { FormEvent, useState } from "react";
 import styles from "./page.module.css";
@@ -88,3 +88,4 @@ export default function ContactForm() {
     </form>
   );
 }
+*/
