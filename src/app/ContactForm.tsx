@@ -1,91 +1,64 @@
-/*"use client";
+"use client";
 
-import { FormEvent, useState } from "react";
+import React from "react";
+import emailjs from "@emailjs/browser";
 import styles from "./page.module.css";
 
-type Status =
-  | { type: "idle" }
-  | { type: "loading" }
-  | { type: "success"; message: string }
-  | { type: "error"; message: string };
-
 export default function ContactForm() {
-  const [status, setStatus] = useState<Status>({ type: "idle" });
-
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  const sendEMail = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
-    const formData = new FormData(form);
 
-    const payload = {
-      name: String(formData.get("name") ?? "").trim(),
-      email: String(formData.get("email") ?? "").trim(),
-      message: String(formData.get("message") ?? "").trim(),
-    };
+    const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
+    const contactTemplateId = process.env.NEXT_PUBLIC_EMAILJS_CONTACT_TEMPLATE_ID;
+    const replyTemplateId = process.env.NEXT_PUBLIC_EMAILJS_REPLY_TEMPLATE_ID;
+    const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
 
-    setStatus({ type: "loading" });
-
-    try {
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const data = (await res.json().catch(() => ({}))) as { error?: string };
-
-      if (!res.ok) {
-        setStatus({
-          type: "error",
-          message: data.error ?? "Envoi impossible. Réessaie plus tard.",
-        });
-        return;
-      }
-
-      form.reset();
-      setStatus({
-        type: "success",
-        message: "Message envoyé. Merci, je te réponds rapidement.",
-      });
-    } catch {
-      setStatus({ type: "error", message: "Erreur réseau. Réessaie dans un instant." });
+    if (!serviceId || !contactTemplateId || !replyTemplateId || !publicKey) {
+      console.error("Missing EmailJS environment variables");
+      alert("Configuration EmailJS manquante");
+      return;
     }
-  }
+
+    // Email pour moi
+    try {
+      await emailjs.sendForm(serviceId, contactTemplateId, form, publicKey);
+
+      // Email automatique
+      await emailjs.sendForm(serviceId, replyTemplateId, form, publicKey);
+
+      alert("Message envoyé avec succès!");
+      form.reset();
+    } catch (error) {
+      console.log(error);
+      alert("Erreur lors de l'envoi");
+    }
+  };
 
   return (
-    <form className={styles.contactForm} onSubmit={handleSubmit}>
-      <p className={styles.formTitle}>Laisser un message</p>
+    <form onSubmit={sendEMail} className={styles.contactForm}>
+      <div className={styles.formTitle}>Me contacter</div>
 
       <div className={styles.formGrid}>
         <label className={styles.formField}>
-          <span>Nom</span>
-          <input name="name" type="text" required maxLength={100} placeholder="Ton nom" />
+          Nom
+          <input type="text" name="name" placeholder="Votre nom" required />
         </label>
 
         <label className={styles.formField}>
-          <span>Email</span>
-          <input name="email" type="email" required maxLength={200} placeholder="ton@email.com" />
+          Email
+          <input type="email" name="email" placeholder="Votre email" required />
         </label>
       </div>
 
       <label className={styles.formField}>
-        <span>Message</span>
-        <textarea
-          name="message"
-          required
-          maxLength={3000}
-          rows={5}
-          placeholder="Écris ton message ici..."
-        />
+        Message
+        <textarea name="message" placeholder="Votre message" rows={5} required />
       </label>
 
-      <button type="submit" className={`${styles.button} ${styles.submitButton}`} disabled={status.type === "loading"}>
-        {status.type === "loading" ? "Envoi..." : "Envoyer le message"}
+      <button type="submit" className={`${styles.button} ${styles.submitButton} ${styles.tap}`}>
+        Envoyer
       </button>
-
-      {status.type === "success" ? <p className={styles.formSuccess}>{status.message}</p> : null}
-      {status.type === "error" ? <p className={styles.formError}>{status.message}</p> : null}
     </form>
   );
 }
-*/
